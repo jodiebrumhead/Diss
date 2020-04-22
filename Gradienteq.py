@@ -32,7 +32,7 @@ if __name__ == '__main__':
     """
     x = []
     y = []
-    
+
     for i in range(101):
         x.append(i)
         y.append(slopeimpact(i))
@@ -41,4 +41,4 @@ if __name__ == '__main__':
     plt.grid()
     plt.xlabel('Slope (%)')
     plt.ylabel('Speed Impact (%)')
-    plt.savefig('/home/s1891967/diss/slopeimpactgraph.png')
+    plt.savefig('slopeimpactgraph.png')
