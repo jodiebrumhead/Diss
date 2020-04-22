@@ -1,21 +1,44 @@
 import math
-print(2*30**2)
+import matplotlib.pyplot as plt
 
-print((2*30)*(2*30))
-
-def dicks(x):
-    answer = 0.11 + math.exp(((-(x + 5)**2)/(2*30**2)))
-    return answer
-
-
-for i in range(-100,101):
-    print(i, dicks(i))
+"""
+Function to calculate equation from Irmischer and Clarke (2018). This models walking speed based on slope.
+"""
+def slopespeed(a):
+    return 0.11 + math.exp(((-(a + 5)**2)/(2*30**2)))
 
 
+"""
+Function to calculate the impact of slope on walking speed. 
 
-# equation =  (0.11 + e^(-(x + 5)**2/(2*30**2)))/(0.11 + e^(-(0 + 5)**2/(2×30**2)))×100
+Finds mean of speed for both upwards and downwards of a slope (%).
+This is then calculated as a percentage of the speed for 0 slope (i.e. flat)
+"""
+def slopeimpact(b):
+    return (((0.5*(slopespeed(+b)+slopespeed(-b))/slopespeed(0)) * 100))
 
 
-#eq1 = ((0.5*((0.11 + math.exp(((-(+x + 5)**2)/(2*30**2)))) + (0.11 + math.exp(((-(-x + 5)**2))/(2*30**2))))) / eq0) * 100
+if __name__ == '__main__':
+    """
+    A print statement to demonstrate the results of each of the equations
+    """
 
-#print(eq1)
+    for i in range(10):
+        print(i, slopespeed(-i), slopespeed(+i), slopeimpact(i))
+
+
+    """
+    Produce a graph of the slopeimpact() function equation. 
+    """
+    x = []
+    y = []
+    
+    for i in range(101):
+        x.append(i)
+        y.append(slopeimpact(i))
+
+    plt.plot(x,y)
+    plt.grid()
+    plt.xlabel('Slope (%)')
+    plt.ylabel('Speed Impact (%)')
+    plt.savefig('/home/s1891967/diss/slopeimpactgraph.png')
