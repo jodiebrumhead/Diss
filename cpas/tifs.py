@@ -35,13 +35,20 @@ class tiffHandle():
 
     ########################################
 
-    def writeTiff(self, filename="chm.tif", epsg=3031):  # deleted data??
+    def writeTiff(self, filename="chm.tif", epsg=4326):  # deleted data??
 
         '''
 
     Write a geotiff from a raster layer
 
     '''
+        #  change to resolution
+        self.res = self.pixelWidth
+
+        # Get those x's and y's
+        self.minX = self.xOrigin
+        self.maxY = self.yOrigin # tiff coordinates different way round
+
 
         # set geolocation information (note geotiffs count down from top edge in Y)
         geotransform = (self.minX, self.res, 0, self.maxY, 0, -1 * self.res)
@@ -52,8 +59,8 @@ class tiffHandle():
         srs = osr.SpatialReference()  # establish encoding
         srs.ImportFromEPSG(epsg)  # WGS84 lat/long
         dst_ds.SetProjection(srs.ExportToWkt())  # export coords to file
-        dst_ds.GetRasterBand(1).WriteArray(self.imageArr)  # write image to the raster
-        dst_ds.GetRasterBand(1).SetNoDataValue(-999)  # set no data value
+        dst_ds.GetRasterBand(1).WriteArray(self.data)  # write image to the raster
+        dst_ds.GetRasterBand(1).SetNoDataValue(-9999)  # set no data value
         dst_ds.FlushCache()  # write to disk
         dst_ds = None
 
@@ -63,7 +70,7 @@ class tiffHandle():
 
     ########################################
 
-    def readTiff(self, filename, epsg=27700):
+    def readTiff(self, filename, epsg=4326):
         '''
 
     Read a geotiff in to RAM
@@ -87,6 +94,6 @@ class tiffHandle():
         self.pixelWidth = transform_ds[1]  # resolution in x direction
         self.pixelHeight = transform_ds[5]  # resolution in y direction
         # read data. Returns as a 2D numpy array
-        self.data = ds.GetRasterBand(1).ReadAsArray(0, 0, self.nX, self.nY)
+        self.data = ds.GetRasterBand(1).ReadAsArray(0, 0, self.nX, self.nY) # you could utilise these to batch process the tif
 
 #######################################################

@@ -1,11 +1,11 @@
-import math
+import numpy as np
 import matplotlib.pyplot as plt
 
 """
 Function to calculate equation from Irmischer and Clarke (2018). This models walking speed based on slope.
 """
 def slopespeed(a):
-    return 0.11 + math.exp(((-(a + 5)**2)/(2*30**2)))
+    return 0.11 + np.exp(((-(a + 5)**2)/(2*30**2)))
 
 
 """

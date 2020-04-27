@@ -15,7 +15,7 @@ Function to resample input file to match reference file.
 N.B. Has not been tested for reprojecting although should work for that also.
 """
 
-def resample(inputfile, referencefile):
+def resamplefunc(inputfile, referencefile):
 
     # Gather input file information
     input = gdal.Open(inputfile, gdalconst.GA_ReadOnly)
@@ -51,7 +51,7 @@ def resample(inputfile, referencefile):
 if __name__ == '__main__':
 
     # Run resample() function with input and reference .tif files.
-    reprojected_dataset = resample('/home/s1891967/diss/Uganda_SRTM30meters/Uganda_SRTM30meters.tif', '/home/s1891967/diss/UgandaLandCover/Uganda_Sentinel2_LULC2016.tif')
+    reprojected_dataset = resamplefunc('/home/s1891967/diss/Uganda_SRTM30meters/Uganda_SRTM30meters.tif', '/home/s1891967/diss/UgandaLandCover/Uganda_Sentinel2_LULC2016.tif')
 
     # To save as GeoTIFF.
     driver = gdal.GetDriverByName ( "GTiff" )
