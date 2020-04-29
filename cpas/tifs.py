@@ -49,7 +49,6 @@ class tiffHandle():
         self.minX = self.xOrigin
         self.maxY = self.yOrigin # tiff coordinates different way round
 
-
         # set geolocation information (note geotiffs count down from top edge in Y)
         geotransform = (self.minX, self.res, 0, self.maxY, 0, -1 * self.res)
 
@@ -82,6 +81,7 @@ class tiffHandle():
         ds = gdal.Open(filename)
 
         # could use gdal.Warp to reproject if wanted?
+        self.proj = ds.GetProjection()
 
         # read data from geotiff object
         self.nX = ds.RasterXSize  # number of pixels in x direction
@@ -97,3 +97,29 @@ class tiffHandle():
         self.data = ds.GetRasterBand(1).ReadAsArray(0, 0, self.nX, self.nY) # you could utilise these to batch process the tif
 
 #######################################################
+
+    def emptyTiff(self):
+
+        '''
+
+    Write a empty memory array
+
+    '''
+        #  change to resolution
+        self.res = self.pixelWidth
+
+        # Get those x's and y's
+        self.minX = self.xOrigin
+        self.maxY = self.yOrigin # tiff coordinates different way round
+
+        # set geolocation information (note geotiffs count down from top edge in Y)
+        geotransform = (self.minX, self.res, 0, self.maxY, 0, -1 * self.res)
+
+        # load data in to geotiff object
+        self.dst_ds = gdal.GetDriverByName('MEM').Create('', self.nX, self.nY, 1, gdal.GDT_Float32)
+        self.dst_ds.SetGeoTransform(geotransform)  # specify coords
+
+        arr = self.dst_ds.GetRasterBand(1).ReadAsArray()
+        arr = np.where(arr == 0.0, np.NaN, arr)
+
+        self.dst_ds.GetRasterBand(1).WriteArray(arr)  # write image to the raster

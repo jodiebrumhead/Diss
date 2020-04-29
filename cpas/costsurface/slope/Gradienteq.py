@@ -33,7 +33,7 @@ if __name__ == '__main__':
     x = []
     y = []
 
-    for i in range(101):
+    for i in range(501):
         x.append(i)
         y.append(slopeimpact(i))
 
