@@ -2,9 +2,14 @@
 creation.py: A python script to create a cost surface from land cover, road and DEM datasets.
 """
 
+import resource
+from timeit import default_timer as timer
+
 # Imports
 import tifs
 from costsurface import lc, r, s, cs
+
+start = timer()
 
 
 #Inputs and Outputs
@@ -30,7 +35,7 @@ child_impact = 0.78
 paths = True
 
 # Output
-cs_out = '/home/s1891967/diss/Data/Output/costsurface.tif'
+cs_out = '/exports/csce/datastore/geos/groups/cpas/costsurface-200515.tif'
 
 
 #Processes
@@ -39,7 +44,7 @@ cs_out = '/home/s1891967/diss/Data/Output/costsurface.tif'
 tiff_attributes = tifs.tiffHandle(lc_inp)
 tiff_attributes.readTiff(lc_inp)
 # Create in-memory driver with same attributes as the landcover input
-# This will be used
+# This will be used as a template for resampling and rasterizing
 tiff_attributes.emptyTiff()
 
 # Extract land cover data 
@@ -66,3 +71,8 @@ cost_surface = cs.ws_to_cs(ws_surface, child_impact, tiff_attributes.res)
 # Output to tiff
 tiff_attributes.data = cost_surface
 tiff_attributes.writeTiff(cs_out)
+
+end = timer()
+print(f'RAM usage: {(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)}')
+
+print(f'Time taken = {end-start}')

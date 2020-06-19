@@ -34,13 +34,13 @@ def resamplefunc(inputfile, ta):
     """
 
     # Gather input file information
-    input = gdal.Open(inputfile, gdalconst.GA_ReadOnly)
-    inputProj = input.GetProjection()
-    inputTrans = input.GetGeoTransform()
+    inp = gdal.Open(inputfile, gdalconst.GA_ReadOnly)
+    inputProj = inp.GetProjection()
+    inputTrans = inp.GetGeoTransform()
 
     # Undertake resampling 
     # Use Bilinear as most suitable for datatype and usage
-    gdal.ReprojectImage(input, ta.dst_ds, inputProj, ta.proj, gdalconst.GRA_Bilinear)
+    gdal.ReprojectImage(inp, ta.dst_ds, inputProj, ta.proj, gdalconst.GRA_Bilinear)
 
     # GDAL object returned by function
     return ta.dst_ds

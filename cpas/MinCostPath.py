@@ -1,3 +1,5 @@
+import numpy as np
+
 """Minimum Cost Path"""
 
 # https://www.geeksforgeeks.org/min-cost-path-dp-6/
@@ -36,11 +38,16 @@ def minCost(cost, m, n):
 
 
 # Driver program to test above functions
-cost = [[1, 2, 3, 9],
-        [4, 8, 2, 1],
-        [1, 5, 3, 4],
-        [2, 7, 3, 5]]
-print(minCost(cost, 3, 3))
+cost = np.array([[1, 2, 3, 9],
+                [4, 8, 2, 1],
+                [1, 5, 3, 4],
+                [2, 7, 3, 5]])
+
+cost = np.flip(cost, (0))
+
+print(cost)
+
+print(minCost(cost, 3, 0))
 
 # For each service calculate a full layer?
 # Then find where points lie

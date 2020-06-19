@@ -9,9 +9,7 @@ https://www.datacamp.com/community/tutorials/fuzzy-string-python
 # Imports
 import sys
 sys.path.append('/home/s1891967/diss/code/Diss/')
-
 from osgeo import ogr
-
 import numpy as np
 import pandas as pd
 from fuzzywuzzy import process
@@ -33,6 +31,7 @@ def backfill(arr, arr1):
     arr1
         Filled array
     """
+    
     arr = np.where(arr < 0.01, np.NaN, arr)
     # FIXME:
     # RuntimeWarning: invalid value encountered in less
@@ -70,7 +69,7 @@ def r_to_ws(road_fn, ws, paths, ta):
 
     # Read excel file with walking speeds into pandas dataframe and sort
     costs = pd.read_csv(ws)
-    costs = costs.sort_values(by=['Walking_Speed'], ascending=True)
+    costs = costs.sort_values(by=['Walking_Speed'], ascending=False)
     # TODO: Consider whether we should take into account congestion, crossings etc
     if paths is False:
         print()
@@ -82,16 +81,20 @@ def r_to_ws(road_fn, ws, paths, ta):
     # Loop through road costs dataframe
     for index, row in costs.iterrows():
 
-        # match spreadsheed road classes to polyline road classes
+        # use fuzzy match spreadsheet road classes to polyline road classes
         match = process.extractOne(row[0], field_vals)
 
         # create SQL string to select one polyline road class at a time
-        sql_str = f"SELECT * FROM AllRoads WHERE tag='{match[0]}'"
+        # formatted string of SQL statement where match[0] = road feature class
+        sql_str = f"SELECT * FROM AllRoads WHERE tag='{match[0]}'" 
 
         # rasterize one road class at a time using value from input csv
         # to in-memory array sized based on landcover input
-        opt = gdal.RasterizeOptions(burnValues=row[1], allTouched=True, SQLStatement=sql_str, SQLDialect='SQLITE')
-        gdal.Rasterize(ta.dst_ds, road_fn, options=opt)
+        opt = gdal.RasterizeOptions(burnValues=row[1], # walking speed value to assign to pixel from input csv
+                                    allTouched=True, # value assigned to all pixels touched by line
+                                    SQLStatement=sql_str, # use above SQL string
+                                    SQLDialect='SQLITE')
+        gdal.Rasterize(ta.dst_ds, road_fn, options=opt) #(in-memory array, road shapefile, above options)
 
         # FIXME: 
         # Warning 1: The input vector layer has a SRS, but the output raster dataset SRS is unknown.
@@ -115,7 +118,7 @@ if __name__ == '__main__':
     costsfile = '/home/s1891967/diss/Data/Input/Road_Costs.csv'
 
     # Output filename
-    ws_out = '/home/s1891967/diss/Data/Output/all_roads.tif'
+    ws_out = '/exports/csce/datastore/geos/groups/cpas/all_roads.tif'
 
     #path to files
     p = '/home/s1891967/diss/Data/Input/'

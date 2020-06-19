@@ -60,7 +60,7 @@ if __name__ == '__main__':
     #path to files
     p = '/home/s1891967/diss/Data/Input/'
     # Landcover
-    lc_inp = p + '/UgandaLandCover/Uganda_Sentinel2_LULC2016.tif'
+    lc_inp = p + 'UgandaLandCover/Uganda_Sentinel2_LULC2016.tif'
     # Walking Speeds
     lc_ws = p + 'Landcover_Costs.csv'
 
