@@ -202,7 +202,7 @@ if __name__ == '__main__':
         point_shapefield = point_description.shapeFieldName
         point_fields = arcpy.ListFields(POINTS_PATH)
         point_field_dict = dict([(f.name, f.type) for f in point_fields])
-        point_count = arcpy.GetCount_management(POINTS_PATH).getOutput(0)
+        point_count = int(arcpy.GetCount_management(POINTS_PATH).getOutput(0))  # JB added int() in here
         point_sr = point_description.spatialReference
 
         # GET INFORMATION ON POLYGON LAYER
