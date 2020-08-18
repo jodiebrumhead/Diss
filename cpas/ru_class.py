@@ -1,90 +1,71 @@
-import tifs
+"""
+A function to return True if a cluster is RURAL according to Degree of Urbanization parameters
+"""
+
+# Imports
 import numpy as np
-from osgeo import gdal, gdalconst
-gdal.UseExceptions()
+import alphashape
+from shapely.geometry import Point
 
 
+def rural_test(arr, clus_indices, pop_total):
+    """
+    Tests whether a cluster is rural or urban
 
-lc_filepath = '/home/s1891967/diss/Data/Input/UgandaLandCover/Uganda_Sentinel2_LULC2016.tif'
+    Parameters
+    ----------
+    arr : numpy array
+        HRSL data
+    clus_indices : numpy array
+        Numpy array of cluster indices 
+    pop_total : float
+        Population total of the cluster
 
-hrsl_filepath = "/home/s1891967/diss/Data/Input/hrsl_settlement/hrsl_uga_pop.tif"
+    Returns
+    -------
+    Boolean Value
+    """
+    # check population total first
+    if pop_total < 5000:
+        return True # return True when Rural
+    if pop_total > 50000:
+        return False # return False when Urban
 
-hrsl = tifs.tiffHandle(hrsl_filepath)
-hrsl.readTiff(hrsl_filepath)
+    # else if within 5000 and 50000
 
-hrsl.emptyTiff()
+    # Create concave hull for cluster
+    alpha = 0.95 * alphashape.optimizealpha(clus_indices)
+    hull = alphashape.alphashape(clus_indices, alpha)
 
-
-# Use water from landcover data to make mask
-# Resample to 30m resolution
-inp = gdal.Open(lc_filepath, gdalconst.GA_ReadOnly)
-inputProj = inp.GetProjection()
-inputTrans = inp.GetGeoTransform()
-
-gdal.ReprojectImage(inp, hrsl.dst_ds, inputProj, hrsl.proj, gdalconst.GRA_NearestNeighbour)
-
-lc_resampled = hrsl.dst_ds.GetRasterBand(1).ReadAsArray()
-
-
-# Where water make null value
-hrsl.data = np.where(lc_resampled == 10, np.NaN, hrsl.data)
-
-
-# where not in Uganda make null value
-hrsl.data = np.where(lc_resampled == lc_resampled, hrsl.data, np.NaN)
-
-
-# where no population make 0 
-hrsl.data = np.where(hrsl.data < 0, 0, hrsl.data)
-
-hrsl.data = np.round(hrsl.data, 2)
+    # Find bounding box
+    bbox = hull.bounds
+    # Find possible indexes within bounding box
+    bbox_poss_ind = [(i,j) for i in range(int(bbox[0]), int(bbox[2]+1)) for j in range(int(bbox[1]), int(bbox[3]+1))]
+    # Find where indexes intersect (want boundary ones too) concave hull
+    clus_area_inds = [p for p in bbox_poss_ind if hull.intersects((Point(p)))]
 
 
-# hrsl.data where cell classified as urban remove from dataset
-# would need to hrsl.data.copy() to avoid wrongly classifying
-new_hrsl = hrsl.data.copy()
+    # Find all values within concave hull of cluster importantly the 0s too
+    clus_values = arr[clus_area_inds]
 
-def limits(index, shp):
-    if index < 0:
-        return 0
-    if index > shp:
-        return shp
-    return index
+    # Remove NaNs as we do not want to consider these in pop density calc
+    # as they are water or outside Uganda
+    clus_values = clus_values[~np.isnan(clus_values)]
 
-def connectivity(s):
-    c = np.count_nonzero(s)/s.shape[0]
-    if c > 0.5: # TODO: need to confirm this number
-        return True
-    return False
-
-def popdens(s):
-    pd = s.sum()/(s.shape[0] * 30 * 30)
-    if pd > 0.0003: # TODO: need to confirm this number
-        return True
-    return False
-
-w = 2 # TODO: need to confirm this number
-
-# for each pixel
-for index, value in np.ndenumerate(hrsl.data):
-    if value != value:
-        pass
-    elif value == 0:
-        pass
+    # test population density
+    if clus_values.sum()/(clus_values.shape[0] * 30 * 30) < 0.0003: 
+        return True # return True when rural 
     else:
-        # slice
-        slc = hrsl.data[limits(index[0]-w,new_hrsl.shape[0]):limits(index[0]+w+1,new_hrsl.shape[0]), limits(index[1]-w,new_hrsl.shape[1]):limits(index[1]+w+1,new_hrsl.shape[1])]
-        # flatten slice and remove NaNs
-        slc = slc[~np.isnan(slc)]
-        # 2 statements which need to evaluate to true funtions?
-        if connectivity(slc) and popdens(slc): # if urban then replace pop with 0 as do not want it to be used in clustering
-            new_hrsl[index] = 0
-            print(f'{index} value changed')
+        return False # return False when urban
 
 
-hrsl.data = new_hrsl
 
-hrsl.writeTiff('/home/s1891967/diss/Data/Output/RU_test.tif')
+
+
+
+
+
+
 
 
 

@@ -7,6 +7,8 @@ from timeit import default_timer as timer
 
 # Imports
 import tifs
+import numpy as np
+
 from costsurface import lc, r, s, cs
 
 start = timer()
@@ -34,8 +36,13 @@ child_impact = 0.78
 # Paths
 paths = True
 
+# Water speed
+waterspeed = 4
+
 # Output
-cs_out = '/exports/csce/datastore/geos/groups/cpas/costsurface-200515.tif'
+cs_out = '/home/s1891967/diss/Data/Output/cost_surface_200713.tif'
+
+cs_water_out = '/home/s1891967/diss/Data/Output/cost_surface_water_200713.tif'
 
 
 #Processes
@@ -51,13 +58,13 @@ tiff_attributes.emptyTiff()
 land_cover = tiff_attributes.data
 
 # Convert land cover to walking speeds
-land_cover = lc.lc_to_ws(land_cover, lc_ws)
+land_cover_speeds = lc.lc_to_ws(land_cover, lc_ws)
 
 # Convert roads to walking speeds
 roads = r.r_to_ws(r_inp, r_ws, paths, tiff_attributes)
 
 # Combine roads and landcover walking speeds to make one surface
-ws_surface = r.backfill(land_cover, roads)
+ws_surface = r.backfill(land_cover_speeds, roads)
 
 # Create slope impact surface
 slope_impact = s.dem_to_slope_impact(dem_inp, tiff_attributes)
@@ -71,6 +78,19 @@ cost_surface = cs.ws_to_cs(ws_surface, child_impact, tiff_attributes.res)
 # Output to tiff
 tiff_attributes.data = cost_surface
 tiff_attributes.writeTiff(cs_out)
+
+# Add water as passable
+land_cover = np.where(land_cover == 10, 4, np.NaN)
+
+# convert water speed to time
+land_cover = cs.ws_to_cs(land_cover, 1, tiff_attributes.res)
+
+cost_surface = np.where(cost_surface != cost_surface, land_cover, cost_surface)
+
+# Output water cost surface to tiff
+tiff_attributes.data = cost_surface
+tiff_attributes.writeTiff(cs_water_out)
+
 
 end = timer()
 print(f'RAM usage: {(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)}')

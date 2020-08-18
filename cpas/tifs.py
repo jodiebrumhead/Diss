@@ -2,6 +2,7 @@
 
 A class to handle geotiffs
 
+inspired by OOSA
 '''
 
 #######################################################
