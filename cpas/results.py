@@ -22,7 +22,7 @@ potent_clust_fn = '/home/s1891967/diss/Data/Output/AllRuralClust.shp'
 potent_clust = gpd.read_file(potent_clust_fn)
 
 # import displaced points
-potent_clust_dis_fn = '/home/s1891967/diss/Data/Output/Displaced1.shp'
+potent_clust_dis_fn = '/home/s1891967/diss/Data/Output/Displaced10.shp'
 potent_clust_dis = gpd.read_file(potent_clust_dis_fn)
 
 # migrate displaced point lat and lon to original points for comaparison
@@ -46,6 +46,7 @@ potent_clust['yInds_dis'] = ((access.yOrigin - potent_clust.dis_lat)/-access.pix
 potent_clust_remove = potent_clust.query('(xInds > @access.nX) or (xInds_dis > @access.nX) or (yInds > @access.nY) or (yInds_dis > @access.nY)')
 potent_clust = potent_clust.drop(potent_clust_remove.index)
 potent_clust_dis = potent_clust_dis.drop(potent_clust_remove.index)
+# TODO: add print to see if there are being removed... 
 
 
 # find time to access for undisplaced and displaced
@@ -57,6 +58,7 @@ potent_clust['Access_dis'] = access.data[potent_clust['yInds_dis'], potent_clust
 potent_clust_remove = potent_clust.query('(Access != Access) or (Access_dis != Access_dis)')
 potent_clust = potent_clust.drop(potent_clust_remove.index)
 potent_clust_dis = potent_clust_dis.drop(potent_clust_remove.index)
+# TODO: add print... 
 
 
 # find distance between points and displaced points 
@@ -117,7 +119,7 @@ for index, row in potent_clust_dis.iterrows():
     print(row)
 
     # Create a 5 km buffer
-    buffer = Polygon(buf.geodesic_point_buffer(row.lat, row.lon, 10))
+    buffer = Polygon(buf.geodesic_point_buffer(row.lat, row.lon, 5))
     # Find undisplaced points within the buffer and create boolean mask
     pip_mask = potent_clust.within(buffer)
     # apply this to undisplaced points to get the index of the points
@@ -151,7 +153,7 @@ for index, row in potent_clust_dis.iterrows():
 
         nearest.append(pnt)
         nearest_access.append(potent_clust.loc[pnt, ['Access']].values[0])
-    
+        
     else:
         within_5.append(np.NaN)
         within_5_access.append(np.NaN)
@@ -203,7 +205,7 @@ prcnt = (np.count_nonzero(potent_clust['near_count'])/len(potent_clust.index)) *
 potent_clust = potent_clust.drop(columns = ['xInds', 'yInds', 'xInds_dis', 'yInds_dis', 'near_count', 'Nearest'])
 
 # Output to shapefile
-potent_clust.to_file("/home/s1891967/diss/Data/Output/results_displaced1.shp")
+potent_clust.to_file("/home/s1891967/diss/Data/Output/results_displaced10.shp")
 
 # Create report
 a = f'Input filename: {potent_clust_dis_fn} \n'
@@ -237,7 +239,7 @@ l = f'Time taken: {t}'
 
 report =  a + b + c + d + e + f + g + h + i + j + k + l
 
-report_fn = '/home/s1891967/diss/Data/Output/results_displaced1.txt'
+report_fn = '/home/s1891967/diss/Data/Output/results_displaced10.txt'
 with open(report_fn, 'w') as rfn:
     rfn.write(report)
 

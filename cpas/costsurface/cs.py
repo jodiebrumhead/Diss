@@ -32,6 +32,7 @@ def ws_to_cs(ws_surface, child_impact, res):
     # convert to time (seconds) from speeds
     # TODO: should this be the surface resolution rather than 20m - no as measures in m/s
     # might be good to convert to res converted into m
+    # speed = distance/time
     cs = 20/arr
 
     return cs

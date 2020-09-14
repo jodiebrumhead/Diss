@@ -70,16 +70,21 @@ hrsl.data = np.where(hrsl.data < 0, 0, hrsl.data)
 # round to 2 decimal places
 hrsl.data = np.round(hrsl.data, 2)
 
+field_vals = []
 
 # Load districts shapefile
 source_ds = ogr.Open(districts_fn)
-source_layer = source_ds.GetLayer()
-feature = source_layer.GetNextFeature()
-# Create a list of districts
-districts = set([feature.GetFieldAsString('District') for feature in source_layer])
+
+
+sql = 'SELECT District from dist_reproj'
+layer = source_ds.ExecuteSQL(sql)
+districts = [feature.GetField(0) for feature in layer]
+
+print(districts)
 
 centers = [] # empty list to add to later
 cnt = 0 # simple counter
+
 
 # Batch process one district at a time
 for d in districts:
@@ -240,6 +245,7 @@ for d in districts:
             centers.append([[a,b]])
 #print(centers)
 
+
 # Flatten to get single list of points for all potential rural DHS clusters
 flatter = [val for sublist in centers for val in sublist]
 #print(flatter)
@@ -259,7 +265,7 @@ gs1 = gpd.GeoDataFrame(gs1, geometry=gpd.points_from_xy(xs,ys))
 print(gs1)
 
 # output to file
-gs1.to_file('/home/s1891967/diss/Data/Output/AllRuralClust.shp')
+gs1.to_file('/home/s1891967/diss/Data/Output/r_clust_v2.shp')
 
 # end time and calculate time taken
 end = time.time()

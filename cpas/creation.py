@@ -36,8 +36,8 @@ child_impact = 0.78
 # Paths
 paths = True
 
-# Water speed
-waterspeed = 4
+# Water speed for water passable layer
+waterspeed = 1.5
 
 # Output
 cs_out = '/home/s1891967/diss/Data/Output/cost_surface_200713.tif'
@@ -75,16 +75,22 @@ ws_surface = ws_surface*(slope_impact/100)
 # Convert walking speed surface to a cost surface
 cost_surface = cs.ws_to_cs(ws_surface, child_impact, tiff_attributes.res)
 
-# Output to tiff
+# Cost surface Output to tiff (water impassable)
 tiff_attributes.data = cost_surface
 tiff_attributes.writeTiff(cs_out)
 
+
+
 # Add water as passable
-land_cover = np.where(land_cover == 10, 4, np.NaN)
+land_cover = np.where(land_cover == 10, waterspeed, np.NaN)
 
 # convert water speed to time
+# 1 as children arnt slower than adults on motor boats... 
 land_cover = cs.ws_to_cs(land_cover, 1, tiff_attributes.res)
 
+# Add the water being passable to the original cost surface
+# != not equal  = nan
+# where cost surface is nan replace with new value to make water passable. 
 cost_surface = np.where(cost_surface != cost_surface, land_cover, cost_surface)
 
 # Output water cost surface to tiff

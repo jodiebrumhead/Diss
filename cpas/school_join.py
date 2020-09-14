@@ -5,8 +5,8 @@ from fuzzywuzzy import process
 from fuzzywuzzy import fuzz
 
 # Read in both data sources as dataframes
-gov = pd.read_csv('C:/Users/jodie/Documents/Gary Unicef Stuff/gov_schools.csv', header='infer', index_col=0)
-osm = pd.read_csv('C:/Users/jodie/Downloads/Schools_classifying_append.csv', header='infer', index_col=0)
+gov = pd.read_csv('/home/s1891967/diss/Data/Input/Schools/gov_schools.csv', header='infer', index_col=0)
+osm = pd.read_csv('/home/s1891967/diss/Data/Input/Schools/Schools_classifying_append.csv', header='infer', index_col=0)
 
 # change P.S to PRIMARY SCHOOL in government schools list for better matching
 osm['name'] = osm['name'].replace({'Primary School' : 'P.S'}, regex=True)
@@ -21,8 +21,6 @@ gov['address'] = gov['School'] + ' ' + gov['Parish'] + ' ' + gov['County'] + ' '
 osm = osm.fillna('') # otherwise does not concatenate where nan
 
 osm['address'] = osm['name'] + ' ' + osm['addr_pname'] + ' ' + osm['addr_conam'] + ' ' + osm['addr_dname']
-
-osm = osm.head(50)
 
 print(osm)
 
@@ -52,24 +50,28 @@ df2.loc[df2['score'] < 70, ['gov_index']] = np.NaN
 
 df2['government_ps'] = [True if x == x else False for x in df2['gov_index']]
 
-df2.to_csv('C:/Users/jodie/Documents/Gary Unicef Stuff/osm2.csv')
+df2.to_csv('/home/s1891967/diss/Data/Output/sch_join.csv')
 
-print(df2)
+print(df2.dtypes)
 
 # count where no match
-count_nan = len(df2[3]) - df2[3].count()
+count_nan = len(df2['gov_index']) - df2['gov_index'].count()
 print(count_nan)
 
 
 # TODO: join OSM df back to the shapefile so they are spatially referenced... using OSM ID
 
-osm_shp = gpd.read_file('')
+osm_shp = gpd.read_file('/home/s1891967/diss/Data/Input/Schools/schools_shapefiles/Uganda_schools_shp.shp')
 
-osm_shp = osm_shp.merge(osm, how='inner', on='osm_id')
+print(osm_shp.dtypes)
+
+osm_shp = osm_shp.astype({'osm_id': int}) 
+
+osm_shp = osm_shp.merge(df2, how='inner', on='osm_id')
 
 print(osm_shp)
 
-osm_shp.to_file('')
+osm_shp.to_file('/home/s1891967/diss/Data/Output/sch_join.shp')
 
 
 
